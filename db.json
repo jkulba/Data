@@ -1,0 +1,71 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Catalina Watkins",
+      "username": "catalins",
+      "email": "tommie28@blick.com",
+      "address": {
+        "street": "1401 Missouri Ave",
+        "city": "South Milwaukee",
+        "zipcode": "53172",
+        "geo": {
+          "lat": "42.9142155",
+          "lng": "-87.8692803"
+        }
+      },
+      "phone": "1-479-342-0595",
+      "website": "hildegard.org",
+      "company": {
+        "name": "Dumont EBVBA",
+        "catchPhrase": "Multi-layered client-server neural-net",
+        "bs": "harness real-time e-markets"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Amelia Ryan",
+      "username": "amelyan",
+      "email": "hand.katelyn@kuhlman.edu.au",
+      "address": {
+        "street": "12 Cleome St",
+        "city": "Ladera Ranch",
+        "zipcode": "92694",
+        "geo": {
+          "lat": "33.544801",
+          "lng": "-117.635861"
+        }
+      },
+      "phone": "61-2-1352-7135",
+      "website": "hildegard.org",
+      "company": {
+        "name": "Luyten CVBA",
+        "catchPhrase": "Multi-layered client-server neural-net",
+        "bs": "harness real-time e-markets"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Oscar Hendrickx",
+      "username": "oscarhkx",
+      "email": "janssens.noemie@advalvas.be",
+      "address": {
+        "street": "4216 S Eldridge St",
+        "suite": "APT 203",
+        "city": "Morrison",
+        "zipcode": "80465",
+        "geo": {
+          "lat": "39.6364272",
+          "lng": "-105.155812"
+        }
+      },
+      "phone": "1-770-736-8031 x56442",
+      "website": "hildegard.org",
+      "company": {
+        "name": "Lacroix EBVBA",
+        "catchPhrase": "Multi-layered client-server neural-net",
+        "bs": "harness real-time e-markets"
+      }
+    }
+  ]
+}
