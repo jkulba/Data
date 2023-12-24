@@ -2,6 +2,8 @@
 
 This repository is used to house JSON data files that can be served using the awesome 'My JSON Server' project.
 
+My JSON Server does NOT modify the data to the db.json file.  The service caches the change.
+
 ## References
 - My JSON Server - https://my-json-server.typicode.com/
 
