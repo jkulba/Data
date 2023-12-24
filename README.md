@@ -6,7 +6,7 @@ This repository is used to house JSON data files that can be served using the aw
 
 ## References
 - My JSON Server - https://my-json-server.typicode.com/
-- [Download Postman](https://www.postman.com/downloads/)
+- Download Postman [here](https://www.postman.com/downloads/)
 
 ## Getting Started
 Postman can accelerate getting started with exercising the user actions.  Open 
