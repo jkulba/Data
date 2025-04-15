@@ -8,6 +8,10 @@ VOLUME_NAME="mssql-data"
 
 start_container() {
     echo "Starting SQL Server container..."
+
+    # Remove the container if it exists
+    podman rm -f $CONTAINER_NAME 2>/dev/null || true
+
     
     # Create volume if it doesn't exist
     podman volume inspect $VOLUME_NAME > /dev/null 2>&1
