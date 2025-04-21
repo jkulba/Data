@@ -1,38 +1,38 @@
 #!/bin/bash
+#exec >> /opt/mssql-ultra3/sql.log 2>&1
+#set -e
+#echo "$(date): Running $0 $1 as $(whoami)"
 
 CONTAINER_NAME="mssql-server"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
-VOLUME_NAME="mssql-data"
+DATA_PATH="/opt/mssql-ultra3/mssql-data"
+HOST_UID=1001  # Replace with actual UID of `mssql`
+HOST_GID=1001  # Or keep root group if desired
 
 start_container() {
     echo "Starting SQL Server container..."
 
-    # Remove the container if it exists
     podman rm -f $CONTAINER_NAME 2>/dev/null || true
 
-    
-    # Create volume if it doesn't exist
-    podman volume inspect $VOLUME_NAME > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Creating volume $VOLUME_NAME..."
-        podman volume create $VOLUME_NAME
-    fi
+    mkdir -p "$DATA_PATH"
+    chown -R $HOST_UID:$HOST_GID "$DATA_PATH"
 
     podman run -d \
+        --user root \
         --name $CONTAINER_NAME \
         --network host \
         -e 'ACCEPT_EULA=Y' \
         -e "SA_PASSWORD=$SA_PASSWORD" \
-        -v $VOLUME_NAME:/var/opt/mssql \
-        $IMAGE
+        -v "$DATA_PATH:/var/opt/mssql:Z" \
+        "$IMAGE"
 }
 
 stop_container() {
     echo "Stopping SQL Server container..."
-    podman stop $CONTAINER_NAME
-    podman rm $CONTAINER_NAME
+    podman stop "$CONTAINER_NAME"
+    podman rm "$CONTAINER_NAME"
 }
 
 status_container() {
@@ -40,17 +40,9 @@ status_container() {
 }
 
 case "$1" in
-    start)
-        start_container
-        ;;
-    stop)
-        stop_container
-        ;;
-    status)
-        status_container
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|status}"
-        ;;
+    start) start_container ;;
+    stop) stop_container ;;
+    status) status_container ;;
+    *) echo "Usage: $0 {start|stop|status}" ;;
 esac
 

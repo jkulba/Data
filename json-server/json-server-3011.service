@@ -1,0 +1,14 @@
+[Unit]
+Description=JSON Server on Port 3011
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/npx json-server /opt/json-server/db2.json --port 3011
+Restart=always
+User=jsonserver
+Group=jsonserver
+WorkingDirectory=/opt/json-server
+
+[Install]
+WantedBy=multi-user.target
+   
