@@ -1,0 +1,21 @@
+[Unit]
+Description=SQL Server Container
+#After=network-online.target
+#Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mssql-ultra3/sql.sh start
+ExecStop=/opt/mssql-ultra3/sql.sh stop
+ExecReload=/opt/mssql-ultra3/sql.sh status
+RemainAfterExit=true
+User=mssql
+Group=mssql
+# Optional but recommended:
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

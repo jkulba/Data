@@ -2,7 +2,7 @@
 
 CONTAINER_NAME="seq"
 IMAGE="docker.io/datalust/seq:latest"
-DATA_DIR="/home/user/.data"
+DATA_DIR="/home/jim/.data"
 
 function start() {
     echo "Starting $CONTAINER_NAME container..."
