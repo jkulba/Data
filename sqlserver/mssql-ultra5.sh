@@ -3,13 +3,11 @@
 #set -e
 #echo "$(date): Running $0 $1 as $(whoami)"
 
-CONTAINER_NAME="mssql-server"
+CONTAINER_NAME="mssql-ultra5"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
-DATA_PATH="/opt/mssql-ultra3/mssql-data"
-HOST_UID=1001  # Replace with actual UID of `mssql`
-HOST_GID=1001  # Or keep root group if desired
+DATA_PATH="/home/jim/.mssql-ultra5/mssql-data"
 
 start_container() {
     echo "Starting SQL Server container..."
