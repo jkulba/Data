@@ -21,6 +21,7 @@ start_container() {
         --user root \
         --name $CONTAINER_NAME \
         --network host \
+        --restart=unless-stopped \
         -e 'ACCEPT_EULA=Y' \
         -e "SA_PASSWORD=$SA_PASSWORD" \
         -v "$DATA_PATH:/var/opt/mssql:Z" \
@@ -37,10 +38,28 @@ status_container() {
     podman ps -a --filter "name=$CONTAINER_NAME"
 }
 
+check_health() {
+    echo "Checking SQL Server container health..."
+    if ! podman ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+        echo "Container is not running"
+        return 1
+    fi
+    
+    if ! podman exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd \
+        -S localhost -U sa -P "$SA_PASSWORD" \
+        -Q "SELECT @@version" >/dev/null 2>&1; then
+        echo "SQL Server is not responding"
+        return 1
+    fi
+    
+    echo "SQL Server is healthy"
+    return 0
+}
+
 case "$1" in
     start) start_container ;;
     stop) stop_container ;;
     status) status_container ;;
-    *) echo "Usage: $0 {start|stop|status}" ;;
+    health) check_health ;;
+    *) echo "Usage: $0 {start|stop|status|health}" ;;
 esac
-
