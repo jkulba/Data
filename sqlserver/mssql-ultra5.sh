@@ -1,5 +1,5 @@
 #!/bin/bash
-#exec >> /opt/mssql-ultra3/sql.log 2>&1
+#exec >> /home/jim/.mssql-ultra3/sql.log 2>&1
 #set -e
 #echo "$(date): Running $0 $1 as $(whoami)"
 
@@ -39,15 +39,16 @@ status_container() {
 }
 
 check_health() {
+    # Construct the sqlcmd command to run inside the container
+    SQLCMD_COMMAND="/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '$SA_PASSWORD' -Q 'SELECT @@version' -N -C"
+
     echo "Checking SQL Server container health..."
     if ! podman ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
         echo "Container is not running"
         return 1
     fi
     
-    if ! podman exec $CONTAINER_NAME /opt/mssql-tools/bin/sqlcmd \
-        -S localhost -U sa -P "$SA_PASSWORD" \
-        -Q "SELECT @@version" >/dev/null 2>&1; then
+    if ! podman exec -it "$CONTAINER_NAME" bash -c "$SQLCMD_COMMAND" >/dev/null 2>&1; then
         echo "SQL Server is not responding"
         return 1
     fi
@@ -63,3 +64,9 @@ case "$1" in
     health) check_health ;;
     *) echo "Usage: $0 {start|stop|status|health}" ;;
 esac
+
+
+#podman exec -it mssql-ultra3 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -Q "SELECT @@VERSION" -N -C
+
+
+
