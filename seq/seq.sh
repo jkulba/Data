@@ -18,7 +18,7 @@ function start() {
         --restart unless-stopped \
         -e ACCEPT_EULA=Y \
         -e SEQ_FIRSTRUN_ADMINPASSWORDHASH="$PH" \
-        -v "$DATA_DIR":/data \
+        -v "$DATA_DIR:/var/opt/seq:Z" \
         -p 5341:80 \
         $IMAGE
 
