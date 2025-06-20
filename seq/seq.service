@@ -1,0 +1,16 @@
+[Unit]
+Description=Seq Logging Container Service
+After=network.target
+Requires=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/jim/.seq/seq valkey-ultra3/valkey-ultra3.sh start
+ExecStop=/home/jim/.valkey-ultra3/valkey-ultra3.sh stop
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+User=jim
+
+[Install]
+WantedBy=multi-user.target
