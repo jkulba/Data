@@ -73,3 +73,11 @@ case "$1" in
 esac
 
 ```
+
+**Explanation:**
+
+- Script uses the official seq container image from docker.io.
+- Script allows user to start, stop, or check status.
+- Configures data volumn to store logging data.
+
+
