@@ -1,0 +1,14 @@
+[Unit]
+Description=SEQ Logging Server Pod
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/seq.sh start
+ExecStop=/usr/local/bin/seq.sh stop
+RemainAfterExit=yes
+User=jim
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
