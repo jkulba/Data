@@ -1,13 +1,10 @@
 #!/bin/bash
-#exec >> /home/jim/.mssql-ultra3/sql.log 2>&1
-#set -e
-#echo "$(date): Running $0 $1 as $(whoami)"
 
-CONTAINER_NAME="mssql-ultra5"
+CONTAINER_NAME="mssql-container"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
-DATA_PATH="/home/jim/.mssql-ultra5/mssql-data"
+DATA_PATH="/opt/mssql/mssql-data"
 
 start_container() {
     echo "Starting SQL Server container..."
