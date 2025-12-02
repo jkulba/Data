@@ -23,9 +23,17 @@ sudo chmod +x /etc/systemd/system/mssql.service
 
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
-sudo systemctl enable --now mssql.service
+sudo systemctl enable mssql.service
 
-sudo systemctl start mssql.service
-
-systemctl status mssql.service
-journalctl -xeu mssql.service
+echo ""
+echo "Installation complete!"
+echo ""
+echo "To start SQL Server:"
+echo "  sudo systemctl start mssql.service"
+echo ""
+echo "To check status:"
+echo "  sudo systemctl status mssql.service"
+echo ""
+echo "To view logs:"
+echo "  sudo journalctl -xeu mssql.service"
+echo ""
