@@ -5,9 +5,9 @@ Description=SQL Server Container
 
 [Service]
 Type=oneshot
-ExecStart=/opt/mssql-ultra3/sql.sh start
-ExecStop=/opt/mssql-ultra3/sql.sh stop
-ExecReload=/opt/mssql-ultra3/sql.sh status
+ExecStart=/opt/mssql/mssql.sh start
+ExecStop=/opt/mssql/mssql.sh stop
+ExecReload=/opt/mssql/mssql.sh status
 RemainAfterExit=true
 User=mssql
 Group=mssql
@@ -18,4 +18,3 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-

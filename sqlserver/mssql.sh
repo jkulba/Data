@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTAINER_NAME="mssql-container"
+CONTAINER_NAME="mssql-server"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433

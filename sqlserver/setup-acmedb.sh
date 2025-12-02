@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define container name, username, and password for SQL Server INSIDE the container
-CONTAINER_NAME="mssql-ultra5"
+CONTAINER_NAME="mssql-server"
 USERNAME="sa"  # Replace with your SQL Server username inside the container
 PASSWORD="P@ssword92"  # Replace with your SQL Server password inside the container
 
