@@ -2,14 +2,15 @@
 
 CONTAINER_NAME="seq"
 IMAGE="docker.io/datalust/seq:latest"
-DATA_DIR="/home/jim/.data"
+DATA_DIR="/home/jim/.seq"
 POD_NAME="seqpod"
 POD_PORT="5341"
+DASHBOARD_PORT="8081"
 
 function start() {
     echo "Ensuring pod $POD_NAME exists..."
     if ! podman pod exists $POD_NAME; then
-        podman pod create --name $POD_NAME -p $POD_PORT:$POD_PORT
+        podman pod create --name $POD_NAME -p $POD_PORT:$POD_PORT -p $DASHBOARD_PORT:80
     fi
 
     echo "Starting $CONTAINER_NAME container..."

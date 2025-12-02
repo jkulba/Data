@@ -1,24 +1,22 @@
 #!/bin/bash
-#exec >> /home/jim/.mssql-ultra3/sql.log 2>&1
-#set -e
-#echo "$(date): Running $0 $1 as $(whoami)"
 
-CONTAINER_NAME="mssql-ultra5"
+CONTAINER_NAME="mssql-server"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
-DATA_PATH="/home/jim/.mssql-ultra5/mssql-data"
+DATA_PATH="/opt/mssql/mssql-data"
 
 start_container() {
     echo "Starting SQL Server container..."
 
+    # Remove existing container if present
     podman rm -f $CONTAINER_NAME 2>/dev/null || true
 
+    # Create data directory if it doesn't exist
     mkdir -p "$DATA_PATH"
-    chown -R $HOST_UID:$HOST_GID "$DATA_PATH"
 
+    # Start the container (no --user root, let SQL Server run as default mssql user)
     podman run -d \
-        --user root \
         --name $CONTAINER_NAME \
         --network host \
         --restart=unless-stopped \
@@ -26,12 +24,14 @@ start_container() {
         -e "SA_PASSWORD=$SA_PASSWORD" \
         -v "$DATA_PATH:/var/opt/mssql:Z" \
         "$IMAGE"
+
+    echo "SQL Server container started successfully."
 }
 
 stop_container() {
     echo "Stopping SQL Server container..."
-    podman stop "$CONTAINER_NAME"
-    podman rm "$CONTAINER_NAME"
+    podman stop "$CONTAINER_NAME" 2>/dev/null || echo "Container is not running."
+    podman rm "$CONTAINER_NAME" 2>/dev/null || echo "Container already removed."
 }
 
 status_container() {
@@ -64,9 +64,3 @@ case "$1" in
     health) check_health ;;
     *) echo "Usage: $0 {start|stop|status|health}" ;;
 esac
-
-
-#podman exec -it mssql-ultra3 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -Q "SELECT @@VERSION" -N -C
-
-
-
