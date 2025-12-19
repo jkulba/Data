@@ -4,7 +4,7 @@ CONTAINER_NAME="mssql-server"
 IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
-DATA_PATH="/opt/mssql/mssql-data"
+DATA_PATH="$HOME/.local/share/mssql-data"
 
 start_container() {
     echo "Starting SQL Server container..."
@@ -15,8 +15,9 @@ start_container() {
     # Create data directory if it doesn't exist
     mkdir -p "$DATA_PATH"
 
-    # Start the container (no --user root, let SQL Server run as default mssql user)
+    # Start the container
     podman run -d \
+        --user root \
         --name $CONTAINER_NAME \
         --network host \
         --restart=unless-stopped \
