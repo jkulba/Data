@@ -18,7 +18,7 @@ This creates a pod named seqpod and maps port 5341 (Seq default) from the pod to
 
 CONTAINER_NAME="seq"
 IMAGE="docker.io/datalust/seq:latest"
-DATA_DIR="/home/jim/.data"
+DATA_DIR="/home/jim/.seq"
 
 function start() {
     echo "Starting $CONTAINER_NAME container..."
