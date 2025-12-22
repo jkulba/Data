@@ -13,13 +13,16 @@ else
     echo "User 'mssql' created"
 fi
 
+# Add mssql user to docker group for container access
+sudo usermod -aG docker mssql
+echo "User 'mssql' added to docker group"
+
 sudo loginctl enable-linger mssql
 
 sudo cp -v mssql.sh /opt/mssql/
 sudo chmod +x /opt/mssql/mssql.sh
 
 sudo cp -v mssql.service /etc/systemd/system
-sudo chmod +x /etc/systemd/system/mssql.service 
 
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload

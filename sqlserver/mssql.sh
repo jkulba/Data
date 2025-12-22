@@ -10,20 +10,20 @@ start_container() {
     echo "Starting SQL Server container..."
 
     # Remove existing container if present
-    podman rm -f $CONTAINER_NAME 2>/dev/null || true
+    docker rm -f $CONTAINER_NAME 2>/dev/null || true
 
     # Create data directory if it doesn't exist
     mkdir -p "$DATA_PATH"
 
     # Start the container
-    podman run -d \
+    docker run -d \
         --user root \
         --name $CONTAINER_NAME \
         --network host \
         --restart=unless-stopped \
         -e 'ACCEPT_EULA=Y' \
         -e "SA_PASSWORD=$SA_PASSWORD" \
-        -v "$DATA_PATH:/var/opt/mssql:Z" \
+        -v "$DATA_PATH:/var/opt/mssql" \
         "$IMAGE"
 
     echo "SQL Server container started successfully."
@@ -31,12 +31,12 @@ start_container() {
 
 stop_container() {
     echo "Stopping SQL Server container..."
-    podman stop "$CONTAINER_NAME" 2>/dev/null || echo "Container is not running."
-    podman rm "$CONTAINER_NAME" 2>/dev/null || echo "Container already removed."
+    docker stop "$CONTAINER_NAME" 2>/dev/null || echo "Container is not running."
+    docker rm "$CONTAINER_NAME" 2>/dev/null || echo "Container already removed."
 }
 
 status_container() {
-    podman ps -a --filter "name=$CONTAINER_NAME"
+    docker ps -a --filter "name=$CONTAINER_NAME"
 }
 
 check_health() {
@@ -44,12 +44,12 @@ check_health() {
     SQLCMD_COMMAND="/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '$SA_PASSWORD' -Q 'SELECT @@version' -N -C"
 
     echo "Checking SQL Server container health..."
-    if ! podman ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+    if ! docker ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
         echo "Container is not running"
         return 1
     fi
     
-    if ! podman exec -it "$CONTAINER_NAME" bash -c "$SQLCMD_COMMAND" >/dev/null 2>&1; then
+    if ! docker exec -it "$CONTAINER_NAME" bash -c "$SQLCMD_COMMAND" >/dev/null 2>&1; then
         echo "SQL Server is not responding"
         return 1
     fi
