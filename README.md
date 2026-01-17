@@ -1,31 +1,95 @@
 # Data Tools
 
-**(1) JSON-SERVER**
-A node module used to serve JSON endpoints of supplied data in a db.json file.  _Very useful for quick testing._
+A collection of management scripts and utilities for running development infrastructure services in Docker containers on Linux systems.
+
+## Project Structure
+
+### azurite/
+Management scripts to run the Azure Storage Emulator (Azurite) as a systemd service. Provides local Azure Blob, Queue, and Table storage for development and testing.
+
+- Systemd service integration with auto-start on boot
+- Health check monitoring for storage endpoints
+- Persistent data storage
+- Installation and management scripts
+
+See [azurite/README.md](azurite/README.md) for detailed setup and usage instructions.
+
+### docker/
+Runbook on how to install Docker CLI in WSL (Windows Subsystem for Linux).
+
+- Step-by-step installation guide
+- WSL2 configuration
+- Docker Desktop integration
+
+See [docker/WSL2-Docker-Setup-Guide.md](docker/WSL2-Docker-Setup-Guide.md) for installation instructions.
+
+### json-server/
+RESTful service for testing and prototyping. Provides a full fake REST API with zero coding.
+
+- Systemd service configurations for multiple instances (ports 3010, 3011, 3012)
+- Sample database (db.json)
+- Quick setup for API testing and frontend development
+
+See [json-server/README.md](json-server/README.md) for configuration details.
 
 Resource: https://github.com/typicode/json-server
 
-**(2) PostgreSQL**
-Docker compose files to host the PostgreSQL server and the pgAdmin tool.
+### pgsql/
+Management scripts to run PostgreSQL database with pgAdmin in Docker containers.
+
+- Docker Compose configuration for PostgreSQL and pgAdmin
+- Persistent volume setup
+- Web-based database management interface
+
+See [pgsql/README.md](pgsql/README.md) for setup instructions.
 
 Resource: https://hub.docker.com/_/postgres/
 
-**(3) MS SQL Server**
-Bash script uses latest version of the docker image from Microsoft.
+### seq/
+Management scripts to run the Datalust SEQ logging server for centralized structured log collection and analysis.
 
-```shell
-./sql.sh start | stop | status
-```
+- Systemd service integration
+- Docker Compose configuration
+- Management scripts for container lifecycle
 
-Resources:
-- https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker?view=sql-server-ver16&tabs=cli&pivots=cs1-bash
+See [seq/readme.md](seq/readme.md) for deployment details.
 
-**(3) Seq**
-Bash script uses latest version.
+Resource: https://datalust.co/
 
-```shell
-./seq.sh start | stop | status
-```
+### sqlserver/
+Management scripts to run Microsoft SQL Server as a systemd service.
 
-Resources:
-- https://datalust.co/
+- Systemd service integration with auto-start on boot
+- SQL Server 2022 container image
+- Automated installation script
+- Database initialization scripts (ACME DB)
+- Health check monitoring
+
+See [sqlserver/README.md](sqlserver/README.md) for installation and usage.
+
+Resource: https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker
+
+### valkey/
+Management scripts to run the Open Source Redis cache (Valkey).
+
+- Systemd service integration
+- High-performance in-memory data store
+- Redis-compatible API
+
+---
+
+## Common Features
+
+All systemd-managed services in this project share:
+- Dedicated system users for security isolation
+- Docker container deployment
+- Automatic startup on boot
+- Persistent data storage
+- Health check capabilities
+- Consistent management commands (start/stop/status/health)
+
+## Prerequisites
+
+- Linux system with systemd
+- Docker and Docker CLI installed
+- Root/sudo access for service installation

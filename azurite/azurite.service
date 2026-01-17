@@ -1,17 +1,17 @@
 [Unit]
-Description=SQL Server Container
+Description=Azurite Storage Emulator Container
 After=network-online.target docker.service
 Wants=network-online.target
 Requires=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/mssql/mssql.sh start
-ExecStop=/opt/mssql/mssql.sh stop
-ExecReload=/opt/mssql/mssql.sh status
+ExecStart=/opt/azurite/azurite.sh start
+ExecStop=/opt/azurite/azurite.sh stop
+ExecReload=/opt/azurite/azurite.sh status
 RemainAfterExit=true
-User=mssql
-Group=mssql
+User=azurite
+Group=azurite
 # Optional but recommended:
 TimeoutStartSec=60
 TimeoutStopSec=30

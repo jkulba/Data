@@ -1,11 +1,11 @@
 # SQL Server Container Setup
 
-This directory contains scripts and configuration files to run Microsoft SQL Server 2022 in a Podman container with systemd service management.
+This directory contains scripts and configuration files to run Microsoft SQL Server 2022 in a Docker container with systemd service management.
 
 ## Prerequisites
 
 **Required:**
-- **Podman** - Container runtime (rootless or rootful)
+- **Docker** - Container runtime
 - **Root/sudo access** - Required for installation and systemd service setup
 
 **System Requirements:**
@@ -24,12 +24,11 @@ This directory contains scripts and configuration files to run Microsoft SQL Ser
 **What it does:**
 - Verifies the script is run with root/sudo privileges
 - Creates the `mssql` user (if it doesn't exist) with home directory at `/opt/mssql`
+- Adds the `mssql` user to the `docker` group for container access
 - Enables user lingering for the `mssql` user (allows services to run when user is not logged in)
 - Copies `mssql.sh` script to `/opt/mssql/` and makes it executable
-- Copies `mssql.service` to `/etc/systemd/system/` and makes it executable
+- Copies `mssql.service` to `/etc/systemd/system/`
 - Reloads systemd and enables the service to start on boot
-- Starts the SQL Server service immediately
-- Displays service status
 
 **Usage:**
 ```bash
@@ -52,7 +51,7 @@ sudo ./install.sh
 - **Image:** `mcr.microsoft.com/mssql/server:2022-latest`
 - **SA Password:** `P@ssword92`
 - **Port:** `1433` (default SQL Server port)
-- **Data Path:** `/opt/mssql/mssql-data` (persistent storage)
+- **Data Path:** `$HOME/.local/share/mssql-data` (persistent storage for mssql user)
 
 **Commands:**
 - `start` - Creates and starts the SQL Server container
@@ -76,11 +75,10 @@ sudo ./install.sh
 ```
 
 **Features:**
-- **Persistent Data:** Database files are stored in `/opt/mssql/mssql-data` and persist when the container is stopped or removed
+- **Persistent Data:** Database files are stored in `$HOME/.local/share/mssql-data` and persist when the container is stopped or removed
 - **Auto-restart:** Container configured with `--restart=unless-stopped` policy
 - **Host Networking:** Uses `--network host` for direct port access
-
-**Important:** The container runs as root inside, and data is persisted to the host filesystem. The script references undefined `HOST_UID` and `HOST_GID` variables on line 15 which may cause issues.
+- **Docker Integration:** Uses Docker CLI for container management
 
 ---
 
@@ -90,7 +88,8 @@ sudo ./install.sh
 
 **Service Configuration:**
 - **Type:** `oneshot` (service starts and exits, container runs in background)
-- **User/Group:** Runs as `mssql` user
+- **User/Group:** Runs as `mssql` user (must be in docker group)
+- **Dependencies:** Requires Docker service and network to be available
 - **ExecStart:** Calls `mssql.sh start`
 - **ExecStop:** Calls `mssql.sh stop`
 - **ExecReload:** Calls `mssql.sh status`
@@ -203,7 +202,7 @@ sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
 
 ## Data Persistence
 
-Database files are stored in `/opt/mssql/mssql-data` and are mounted into the container at `/var/opt/mssql`. This means:
+Database files are stored in `~/.local/share/mssql-data` (for the mssql user: `/home/mssql/.local/share/mssql-data`) and are mounted into the container at `/var/opt/mssql`. This means:
 
 - ✅ Data persists when the container is stopped
 - ✅ Data persists when the container is removed
@@ -213,7 +212,7 @@ Database files are stored in `/opt/mssql/mssql-data` and are mounted into the co
 **Backup Example:**
 ```bash
 sudo systemctl stop mssql.service
-sudo tar -czf mssql-backup-$(date +%Y%m%d).tar.gz /opt/mssql/mssql-data
+sudo tar -czf mssql-backup-$(date +%Y%m%d).tar.gz /home/mssql/.local/share/mssql-data
 sudo systemctl start mssql.service
 ```
 
@@ -221,14 +220,19 @@ sudo systemctl start mssql.service
 
 ## Troubleshooting
 
-### Check if Podman is installed
+### Check if Docker is installed
 ```bash
-podman --version
+docker --version
+```
+
+### Verify Docker service is running
+```bash
+sudo systemctl status docker
 ```
 
 ### View container logs
 ```bash
-podman logs mssql-server
+docker logs mssql-server
 ```
 
 ### View service logs
@@ -238,15 +242,20 @@ sudo journalctl -xeu mssql.service -f
 
 ### Manually connect to SQL Server
 ```bash
-podman exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
+docker exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
+```
+
+### Check if mssql user is in docker group
+```bash
+groups mssql
 ```
 
 ### Remove everything and start fresh
 ```bash
 sudo systemctl stop mssql.service
 sudo systemctl disable mssql.service
-podman rm -f mssql-server
-sudo rm -rf /opt/mssql/mssql-data
+docker rm -f mssql-server
+sudo rm -rf /home/mssql/.local/share/mssql-data
 sudo ./install.sh
 ```
 
