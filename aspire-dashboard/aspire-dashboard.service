@@ -1,0 +1,21 @@
+[Unit]
+Description=Aspire Dashboard Container
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/aspire-dashboard/aspire-dashboard.sh start
+ExecStop=/opt/aspire-dashboard/aspire-dashboard.sh stop
+ExecReload=/opt/aspire-dashboard/aspire-dashboard.sh status
+RemainAfterExit=true
+User=aspire
+Group=aspire
+# Optional but recommended:
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
