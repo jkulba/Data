@@ -4,6 +4,16 @@ A collection of management scripts and utilities for running development infrast
 
 ## Project Structure
 
+### aspire-dashboard/
+Management scripts to run the .NET Aspire Dashboard as a systemd service. Provides a web-based UI for viewing real-time logs, traces, and metrics from distributed applications via OpenTelemetry.
+
+- Systemd service integration with auto-start on boot
+- OTLP gRPC and HTTP endpoints for receiving telemetry (ports 18889, 18890)
+- Dashboard UI on port 18888
+- Installation and management scripts
+
+See [aspire-dashboard/README.md](aspire-dashboard/README.md) for detailed setup and usage instructions.
+
 ### azurite/
 Management scripts to run the Azure Storage Emulator (Azurite) as a systemd service. Provides local Azure Blob, Queue, and Table storage for development and testing.
 
