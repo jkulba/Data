@@ -22,6 +22,11 @@ start_container() {
         --network host \
         --restart=unless-stopped \
         -v "$DATA_PATH:/data" \
+        --health-cmd "nc -z 127.0.0.1 ${PORT_BLOB} && nc -z 127.0.0.1 ${PORT_QUEUE} && nc -z 127.0.0.1 ${PORT_TABLE} || exit 1" \
+        --health-interval 30s \
+        --health-timeout 5s \
+        --health-retries 3 \
+        --health-start-period 10s \
         "$IMAGE"
 
     echo "Azurite container started successfully."

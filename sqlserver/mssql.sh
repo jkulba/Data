@@ -24,6 +24,11 @@ start_container() {
         -e 'ACCEPT_EULA=Y' \
         -e "SA_PASSWORD=$SA_PASSWORD" \
         -v "$DATA_PATH:/var/opt/mssql" \
+        --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '$SA_PASSWORD' -Q 'SELECT 1' -N -C || exit 1" \
+        --health-interval 30s \
+        --health-timeout 10s \
+        --health-retries 3 \
+        --health-start-period 30s \
         "$IMAGE"
 
     echo "SQL Server container started successfully."
