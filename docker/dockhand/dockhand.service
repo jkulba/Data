@@ -10,8 +10,8 @@ ExecStart=/opt/dockhand/dockhand.sh start
 ExecStop=/opt/dockhand/dockhand.sh stop
 ExecReload=/opt/dockhand/dockhand.sh status
 RemainAfterExit=true
-User=azurite
-Group=azurite
+User=dockhand
+Group=dockhand
 # Optional but recommended:
 TimeoutStartSec=60
 TimeoutStopSec=30

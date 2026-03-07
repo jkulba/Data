@@ -6,37 +6,37 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-if id "azurite" &>/dev/null; then
-    echo "User 'azurite' already exists, continuing..."
+if id "dockhand" &>/dev/null; then
+    echo "User 'dockhand' already exists, continuing..."
 else
-    sudo useradd -m -d /opt/azurite -s /bin/bash azurite
-    echo "User 'azurite' created"
+    sudo useradd -m -d /opt/dockhand -s /bin/bash dockhand
+    echo "User 'dockhand' created"
 fi
 
-# Add azurite user to docker group for container access
-sudo usermod -aG docker azurite
-echo "User 'azurite' added to docker group"
+# Add dockhand user to docker group for container access
+sudo usermod -aG docker dockhand
+echo "User 'dockhand' added to docker group"
 
-sudo loginctl enable-linger azurite
+sudo loginctl enable-linger dockhand
 
-sudo cp -v azurite.sh /opt/azurite/
-sudo chmod +x /opt/azurite/azurite.sh
+sudo cp -v dockhand.sh /opt/dockhand/
+sudo chmod +x /opt/dockhand/dockhand.sh
 
-sudo cp -v azurite.service /etc/systemd/system
+sudo cp -v dockhand.service /etc/systemd/system
 
 sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
-sudo systemctl enable azurite.service
+sudo systemctl enable dockhand.service
 
 echo ""
 echo "Installation complete!"
 echo ""
-echo "To start Azurite:"
-echo "  sudo systemctl start azurite.service"
+echo "To start Dockhand:"
+echo "  sudo systemctl start dockhand.service"
 echo ""
 echo "To check status:"
-echo "  sudo systemctl status azurite.service"
+echo "  sudo systemctl status dockhand.service"
 echo ""
 echo "To view logs:"
-echo "  sudo journalctl -xeu azurite.service"
+echo "  sudo journalctl -xeu dockhand.service"
 echo ""
