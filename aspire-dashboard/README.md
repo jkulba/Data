@@ -1,113 +1,126 @@
 # Aspire Dashboard
 
-The .NET Aspire Dashboard is a standalone application that provides a web-based UI for viewing telemetry data from your distributed applications. It displays logs, traces, and metrics in real-time, making it an excellent tool for local development and debugging.
+The .NET Aspire Dashboard is a standalone web application that displays real-time logs, traces, and metrics from distributed applications via OpenTelemetry. Ideal for local development and debugging.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Files](#files)
+4. [Installation](#installation)
+5. [Managing the Service](#managing-the-service)
+6. [Management Script Commands](#management-script-commands)
+7. [Running Manually with Docker](#running-manually-with-docker)
+8. [Sending Telemetry](#sending-telemetry)
+9. [Health Checks](#health-checks)
+10. [Troubleshooting](#troubleshooting)
+11. [Additional Resources](#additional-resources)
+
+---
+
+## Overview
+
+| Property | Value |
+|----------|-------|
+| Container image | `mcr.microsoft.com/dotnet/aspire-dashboard:latest` |
+| Container name | `aspire-dashboard` |
+| Service user | `aspire-dashboard` |
+| Dashboard UI | `http://localhost:18888` |
+| OTLP gRPC endpoint | `http://localhost:18889` |
+| OTLP HTTP endpoint | `http://localhost:18890` |
+| Data path | `/opt/aspire-dashboard` |
+
+---
 
 ## Prerequisites
 
-- Docker CLI installed on your system (Linux or Windows 11)
-- Basic knowledge of Docker commands
+- Docker installed and running on your system
+- Root / sudo access (for systemd installation)
 
-## Running Aspire Dashboard as a Systemd Service (Linux)
+---
 
-For production-like usage on Linux systems, you can install Aspire Dashboard as a systemd service that runs automatically on boot.
+## Files
 
-### Installation
+| File | Description |
+|------|-------------|
+| `aspire-dashboard.sh` | Container management script (start/stop/status/health) |
+| `aspire-dashboard.service` | systemd service unit file |
+| `install.sh` | One-time installation script (requires root) |
+| `README.md` | This file |
 
-The installation script automates the setup process:
+---
+
+## Installation
+
+Run the install script once to set up the service:
 
 ```bash
-cd /path/to/Projects/Data/aspire-dashboard
+cd /path/to/Data/aspire-dashboard
 sudo ./install.sh
 ```
 
 **What the install script does:**
 
-1. **Creates a dedicated user**: Creates an `aspire` system user with home directory at `/opt/aspire-dashboard`
-2. **Sets up Docker permissions**: Adds the `aspire` user to the `docker` group for container management
-3. **Enables user lingering**: Configures systemd to allow the user's services to run even when not logged in
-4. **Copies management script**: Installs `aspire-dashboard.sh` to `/opt/aspire-dashboard/` with execute permissions
-5. **Installs systemd service**: Copies `aspire-dashboard.service` to `/etc/systemd/system/`
-6. **Enables the service**: Configures Aspire Dashboard to start automatically on system boot
+1. Creates an `aspire-dashboard` system user with home directory at `/opt/aspire-dashboard`
+2. Adds the `aspire-dashboard` user to the `docker` group
+3. Enables user lingering (`loginctl enable-linger aspire-dashboard`)
+4. Copies `aspire-dashboard.sh` to `/opt/aspire-dashboard/` with execute permissions
+5. Copies `aspire-dashboard.service` to `/etc/systemd/system/`
+6. Runs `systemctl daemon-reload` and enables the service to start on boot
 
-### Managing the Service
+After installation, start the service manually for the first time:
 
-**Start Aspire Dashboard:**
 ```bash
 sudo systemctl start aspire-dashboard.service
 ```
 
-**Stop Aspire Dashboard:**
+---
+
+## Managing the Service
+
 ```bash
+# Start
+sudo systemctl start aspire-dashboard.service
+
+# Stop
 sudo systemctl stop aspire-dashboard.service
-```
 
-**Check status:**
-```bash
+# Check status
 sudo systemctl status aspire-dashboard.service
-```
 
-**Enable auto-start on boot (already done by install script):**
-```bash
+# Enable auto-start on boot (done by install script)
 sudo systemctl enable aspire-dashboard.service
-```
 
-**Disable auto-start:**
-```bash
+# Disable auto-start
 sudo systemctl disable aspire-dashboard.service
-```
 
-**View logs:**
-```bash
+# View logs
 sudo journalctl -xeu aspire-dashboard.service
-```
 
-**View real-time logs:**
-```bash
+# Follow real-time logs
 sudo journalctl -fu aspire-dashboard.service
 ```
 
-### Management Script Commands
+---
 
-The `aspire-dashboard.sh` script provides additional management capabilities:
+## Management Script Commands
 
-**Check container health:**
+The `aspire-dashboard.sh` script can also be called directly as the `aspire-dashboard` user:
+
 ```bash
-sudo -u aspire /opt/aspire-dashboard/aspire-dashboard.sh health
+sudo -u aspire-dashboard /opt/aspire-dashboard/aspire-dashboard.sh start
+sudo -u aspire-dashboard /opt/aspire-dashboard/aspire-dashboard.sh stop
+sudo -u aspire-dashboard /opt/aspire-dashboard/aspire-dashboard.sh status
+sudo -u aspire-dashboard /opt/aspire-dashboard/aspire-dashboard.sh health
 ```
 
-This tests the dashboard endpoint to ensure it's responding.
+---
 
-**View container status:**
-```bash
-sudo -u aspire /opt/aspire-dashboard/aspire-dashboard.sh status
-```
+## Running Manually with Docker
 
-**Manually start container:**
-```bash
-sudo -u aspire /opt/aspire-dashboard/aspire-dashboard.sh start
-```
+Use these commands when running without systemd (e.g., on Windows 11 or for a quick test):
 
-**Manually stop container:**
-```bash
-sudo -u aspire /opt/aspire-dashboard/aspire-dashboard.sh stop
-```
-
-### Service Configuration
-
-The service is configured to:
-- Start automatically after Docker is running
-- Expose ports 18888, 18889, 18890
-- Restart on failure
-- Run as the `aspire` user for security
-- Allow anonymous access for development purposes
-
-## Running Aspire Dashboard in Docker (Manual)
-
-For Windows 11 or manual Docker management on Linux, use these commands.
-
-### Start Aspire Dashboard Container
-
-Run the following command to start Aspire Dashboard:
+**Linux / macOS:**
 
 ```bash
 docker run -d \
@@ -119,12 +132,8 @@ docker run -d \
   mcr.microsoft.com/dotnet/aspire-dashboard:latest
 ```
 
-**Port Mappings:**
-- `18888`: Dashboard UI (main web interface)
-- `18889`: OTLP gRPC endpoint (for receiving telemetry)
-- `18890`: OTLP HTTP endpoint (for receiving telemetry)
+**Windows 11 (PowerShell):**
 
-**For Windows 11 (PowerShell):**
 ```powershell
 docker run -d `
   --name aspire-dashboard `
@@ -135,133 +144,35 @@ docker run -d `
   mcr.microsoft.com/dotnet/aspire-dashboard:latest
 ```
 
-## Accessing the Dashboard
+| Port | Purpose |
+|------|---------|
+| 18888 | Dashboard UI |
+| 18889 | OTLP gRPC endpoint |
+| 18890 | OTLP HTTP endpoint |
 
-Once the container is running, you can access the Aspire Dashboard at:
+---
 
-**Dashboard URL:** [http://localhost:18888](http://localhost:18888)
+## Sending Telemetry
 
-## Testing the Connection
-
-### Verify Container is Running
-
-```bash
-docker ps | grep aspire-dashboard
-```
-
-Expected output should show the container running with all three ports mapped.
-
-### Check Container Logs
-
-```bash
-docker logs aspire-dashboard
-```
-
-You should see output indicating the dashboard has started successfully.
-
-### Test Dashboard Endpoint
-
-**Using curl:**
-
-```bash
-curl -I http://localhost:18888
-```
-
-**Or simply open in your browser:**
-
-```
-http://localhost:18888
-```
-
-You should see the Aspire Dashboard UI displaying telemetry information.
-
-## Endpoint Details
-
-### Dashboard Endpoints
-
-- **Dashboard UI**: `http://localhost:18888`
-- **OTLP gRPC Endpoint**: `http://localhost:18889`
-- **OTLP HTTP Endpoint**: `http://localhost:18890`
-
-### Environment Variables
-
-- **DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS**: `true` (allows access without authentication - suitable for local development only)
-
-## Container Management
-
-### Stop the Container
-
-```bash
-docker stop aspire-dashboard
-```
-
-### Start the Container
-
-```bash
-docker start aspire-dashboard
-```
-
-### Restart the Container
-
-```bash
-docker restart aspire-dashboard
-```
-
-### Remove the Container
-
-```bash
-docker rm -f aspire-dashboard
-```
-
-### View Real-time Logs
-
-```bash
-docker logs -f aspire-dashboard
-```
-
-## Sending Telemetry to the Dashboard
-
-### .NET Example with OpenTelemetry
-
-To send telemetry from your .NET application to the Aspire Dashboard:
+### .NET Example
 
 ```csharp
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("MyService"))
-    .WithTracing(tracing => tracing
+    .ConfigureResource(r => r.AddService("MyService"))
+    .WithTracing(t => t
         .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter(options => 
-        {
-            options.Endpoint = new Uri("http://localhost:18889");
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter(options => 
-        {
-            options.Endpoint = new Uri("http://localhost:18889");
-        }));
-
-builder.Logging.AddOpenTelemetry(logging => logging
-    .AddOtlpExporter(options => 
-    {
-        options.Endpoint = new Uri("http://localhost:18889");
-    }));
+        .AddOtlpExporter(o => o.Endpoint = new Uri("http://localhost:18889")));
 
 var app = builder.Build();
 app.Run();
 ```
 
-### Python Example with OpenTelemetry
+### Python Example
 
 ```python
 from opentelemetry import trace
@@ -269,32 +180,38 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
-# Configure the OTLP exporter
-otlp_exporter = OTLPSpanExporter(
-    endpoint="http://localhost:18889",
-    insecure=True
+provider = TracerProvider()
+provider.add_span_processor(
+    BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:18889", insecure=True))
 )
-
-# Set up the tracer provider
-trace.set_tracer_provider(TracerProvider())
-tracer_provider = trace.get_tracer_provider()
-tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-
-# Create a tracer
-tracer = trace.get_tracer(__name__)
-
-# Use the tracer
-with tracer.start_as_current_span("my-operation"):
-    print("Sending telemetry to Aspire Dashboard")
+trace.set_tracer_provider(provider)
 ```
+
+---
+
+## Health Checks
+
+```bash
+# Check service status
+sudo systemctl status aspire-dashboard.service
+
+# Run the built-in health check
+sudo -u aspire-dashboard /opt/aspire-dashboard/aspire-dashboard.sh health
+
+# Test the dashboard endpoint directly
+curl -I http://localhost:18888
+
+# View container logs
+docker logs aspire-dashboard
+```
+
+Expected: HTTP `200 OK` from the dashboard endpoint.
+
+---
 
 ## Troubleshooting
 
-### Port Already in Use
-
-If you get a port conflict error, either:
-1. Stop the service using that port
-2. Use different ports:
+**Port already in use** — map to alternate host ports:
 
 ```bash
 docker run -d \
@@ -306,24 +223,19 @@ docker run -d \
   mcr.microsoft.com/dotnet/aspire-dashboard:latest
 ```
 
-Then access the dashboard at `http://localhost:28888`.
-
-### Connection Refused
-
+**Connection refused:**
 - Verify the container is running: `docker ps`
-- Check if ports are properly mapped: `docker port aspire-dashboard`
-- Verify firewall settings allow local connections
-- Ensure Docker is running
+- Check port mappings: `docker port aspire-dashboard`
+- Ensure Docker is running: `sudo systemctl status docker`
 
-### Dashboard Not Showing Data
+**Dashboard not showing data:**
+- Confirm your app sends telemetry to `http://localhost:18889` (gRPC) or `http://localhost:18890` (HTTP)
+- Review application logs for OTLP export errors
 
-- Verify your application is configured to send telemetry to the correct OTLP endpoint
-- Check that the OTLP exporter is properly configured in your application
-- Review application logs for any OpenTelemetry export errors
+---
 
 ## Additional Resources
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [Aspire Dashboard GitHub](https://github.com/dotnet/aspire)
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
-- [OTLP Protocol Specification](https://opentelemetry.io/docs/specs/otlp/)

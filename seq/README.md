@@ -1,4 +1,4 @@
-# SEQ
+# Seq
 
 Seq is a centralized structured log server from Datalust. It ingests logs, traces, and events from applications and provides a powerful query interface for searching and analyzing them.
 
@@ -6,15 +6,16 @@ Seq is a centralized structured log server from Datalust. It ingests logs, trace
 
 1. [Overview](#overview)
 2. [Prerequisites](#prerequisites)
-3. [Installation](#installation)
-4. [Managing the Service](#managing-the-service)
-5. [Management Script Commands](#management-script-commands)
-6. [Running with Docker Compose](#running-with-docker-compose)
-7. [Accessing Seq](#accessing-seq)
-8. [Sending Logs to Seq](#sending-logs-to-seq)
-9. [Health Checks](#health-checks)
-10. [Troubleshooting](#troubleshooting)
-11. [Additional Resources](#additional-resources)
+3. [Files](#files)
+4. [Installation](#installation)
+5. [Managing the Service](#managing-the-service)
+6. [Management Script Commands](#management-script-commands)
+7. [Running with Docker Compose](#running-with-docker-compose)
+8. [Accessing Seq](#accessing-seq)
+9. [Sending Logs to Seq](#sending-logs-to-seq)
+10. [Health Checks](#health-checks)
+11. [Troubleshooting](#troubleshooting)
+12. [Additional Resources](#additional-resources)
 
 ---
 
@@ -35,6 +36,18 @@ Seq is a centralized structured log server from Datalust. It ingests logs, trace
 
 - Docker installed and running on your system
 - Root / sudo access (for systemd installation)
+
+---
+
+## Files
+
+| File | Description |
+|------|-------------|
+| `seq.sh` | Container management script (start/stop/status/health) |
+| `seq.service` | systemd service unit file |
+| `install.sh` | One-time installation script (requires root) |
+| `compose.yml` | Docker Compose alternative to systemd service |
+| `README.md` | This file |
 
 ---
 
@@ -93,58 +106,28 @@ sudo journalctl -fu seq.service
 
 ## Management Script Commands
 
-The `seq.sh` script can be called directly as the `seq` user:
+The `seq.sh` script can also be called directly as the `seq` user:
 
 ```bash
-# Start the container
 sudo -u seq /opt/seq/seq.sh start
-
-# Stop the container
 sudo -u seq /opt/seq/seq.sh stop
-
-# Check container status
 sudo -u seq /opt/seq/seq.sh status
-
-# Run health check
 sudo -u seq /opt/seq/seq.sh health
 ```
-
-The script:
-1. Removes any existing container before starting a fresh one
-2. Creates the `seq-network` Docker network if it does not exist
-3. Generates a password hash for the admin account
-4. Starts the Seq container with data persisted at `~/.local/share/seq-data`
 
 ---
 
 ## Running with Docker Compose
 
-As an alternative to the systemd service, you can run Seq with Docker Compose:
+As an alternative to the systemd service:
 
 ```bash
 cd /path/to/Data/seq
 
-# Set the password hash environment variable
+# Set the password hash environment variable first
 export SEQ_FIRSTRUN_ADMINPASSWORDHASH=$(echo 'P@ssword92' | docker run --rm -i datalust/seq config hash)
 
-# Start Seq
 docker compose up -d
-```
-
-Or run directly with Docker:
-
-```bash
-PH=$(echo 'P@ssword92' | docker run --rm -i datalust/seq config hash)
-
-docker run -d \
-  --name seq \
-  -p 5341:5341 \
-  -p 8081:80 \
-  --restart unless-stopped \
-  -e ACCEPT_EULA=Y \
-  -e SEQ_FIRSTRUN_ADMINPASSWORDHASH="$PH" \
-  -v $HOME/.local/share/seq-data:/data \
-  datalust/seq
 ```
 
 ---
@@ -159,9 +142,7 @@ Default credentials:
 - **Username:** `admin`
 - **Password:** `P@ssword92`
 
-The ingestion API is available at:
-
-**`http://localhost:5341`**
+The ingestion API is available at: `http://localhost:5341`
 
 ---
 
@@ -169,66 +150,14 @@ The ingestion API is available at:
 
 ### .NET with Serilog
 
-Install the Serilog Seq sink:
-
 ```bash
 dotnet add package Serilog.Sinks.Seq
 ```
 
-Configure in code:
-
 ```csharp
-using Serilog;
-
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Seq("http://localhost:5341")
     .CreateLogger();
-
-Log.Information("Application started");
-Log.Warning("This is a warning with {Value}", 42);
-Log.CloseAndFlush();
-```
-
-Or via `appsettings.json`:
-
-```json
-{
-  "Serilog": {
-    "WriteTo": [
-      {
-        "Name": "Seq",
-        "Args": {
-          "serverUrl": "http://localhost:5341"
-        }
-      }
-    ]
-  }
-}
-```
-
-### Python with requests
-
-```python
-import requests
-import json
-from datetime import datetime, timezone
-
-def send_to_seq(message, level="Information", **properties):
-    event = {
-        "Events": [{
-            "Timestamp": datetime.now(timezone.utc).isoformat(),
-            "Level": level,
-            "MessageTemplate": message,
-            "Properties": properties
-        }]
-    }
-    requests.post(
-        "http://localhost:5341/api/events/raw",
-        data=json.dumps(event),
-        headers={"Content-Type": "application/vnd.serilog.clef"}
-    )
-
-send_to_seq("Hello from Python {Lang}", Lang="Python")
 ```
 
 ### curl (raw CLEF)
@@ -250,37 +179,29 @@ sudo systemctl status seq.service
 # Run the built-in health check
 sudo -u seq /opt/seq/seq.sh health
 
-# Check the dashboard endpoint
+# Test the dashboard endpoint
 curl -I http://localhost:8081
 
 # View container logs
 docker logs seq
 ```
 
-Expected: HTTP `2xx` response from the dashboard endpoint.
-
 ---
 
 ## Troubleshooting
 
-### Container fails to start
-
-- Confirm the data directory exists and is writable by the `seq` user
+**Container fails to start:**
 - Check Docker is running: `sudo systemctl status docker`
-- View container logs: `docker logs seq`
 - View service logs: `sudo journalctl -xeu seq.service`
+- View container logs: `docker logs seq`
 
-### Dashboard not accessible
-
+**Dashboard not accessible:**
 - Verify the container is running: `docker ps | grep seq`
-- Ensure nothing else is using port 8081: `sudo lsof -i :8081`
-- Check port mappings: `docker port seq`
+- Ensure port 8081 is free: `sudo lsof -i :8081`
 
-### Logs not appearing in Seq
-
-- Confirm your application is sending to `http://localhost:5341`
-- Test the ingestion API with curl (see Health Checks above)
-- Verify the `ACCEPT_EULA` environment variable is set to `Y`
+**Logs not appearing in Seq:**
+- Confirm your application sends to `http://localhost:5341`
+- Verify `ACCEPT_EULA=Y` is set in the container environment
 
 ---
 
@@ -289,4 +210,3 @@ Expected: HTTP `2xx` response from the dashboard endpoint.
 - [Datalust Seq Documentation](https://docs.datalust.co/docs)
 - [Seq Docker Hub](https://hub.docker.com/r/datalust/seq)
 - [Serilog.Sinks.Seq](https://github.com/serilog/serilog-sinks-seq)
-- [Datalust Website](https://datalust.co/)

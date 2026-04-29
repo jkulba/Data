@@ -1,152 +1,130 @@
-# Azurite Storage
+# Azurite
 
-Azurite is an open-source Azure Storage API compatible server (emulator) that provides a local environment for testing Azure blob, queue, and table storage applications.
+Azurite is an open-source Azure Storage API-compatible emulator that provides a local environment for testing Azure Blob, Queue, and Table Storage applications without an Azure subscription.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Files](#files)
+4. [Installation](#installation)
+5. [Managing the Service](#managing-the-service)
+6. [Management Script Commands](#management-script-commands)
+7. [Running Manually with Docker](#running-manually-with-docker)
+8. [Connection Details](#connection-details)
+9. [Testing with Code](#testing-with-code)
+10. [Health Checks](#health-checks)
+11. [Troubleshooting](#troubleshooting)
+12. [Additional Resources](#additional-resources)
+
+---
+
+## Overview
+
+| Property | Value |
+|----------|-------|
+| Container image | `mcr.microsoft.com/azure-storage/azurite:latest` |
+| Container name | `azurite` |
+| Service user | `azurite` |
+| Blob service | `http://127.0.0.1:10000` |
+| Queue service | `http://127.0.0.1:10001` |
+| Table service | `http://127.0.0.1:10002` |
+| Data path | `/home/azurite/.local/share/azurite-data` |
+
+---
 
 ## Prerequisites
 
-- Docker CLI installed on your system (Linux or Windows 11)
-- Basic knowledge of Docker commands
+- Docker installed and running on your system
+- Root / sudo access (for systemd installation)
 
-## Running Azurite as a Systemd Service (Linux)
+---
 
-For production-like usage on Linux systems, you can install Azurite as a systemd service that runs automatically on boot.
+## Files
 
-### Installation
+| File | Description |
+|------|-------------|
+| `azurite.sh` | Container management script (start/stop/status/health) |
+| `azurite.service` | systemd service unit file |
+| `install.sh` | One-time installation script (requires root) |
+| `README.md` | This file |
 
-The installation script automates the setup process:
+---
+
+## Installation
+
+Run the install script once to set up the service:
 
 ```bash
-cd /home/jim/Projects/Data/azurite
+cd /path/to/Data/azurite
 sudo ./install.sh
 ```
 
 **What the install script does:**
 
-1. **Creates a dedicated user**: Creates an `azurite` system user with home directory at `/opt/azurite`
-2. **Sets up Docker permissions**: Adds the `azurite` user to the `docker` group for container management
-3. **Enables user lingering**: Configures systemd to allow the user's services to run even when not logged in
-4. **Copies management script**: Installs `azurite.sh` to `/opt/azurite/` with execute permissions
-5. **Installs systemd service**: Copies `azurite.service` to `/etc/systemd/system/`
-6. **Enables the service**: Configures Azurite to start automatically on system boot
+1. Creates an `azurite` system user with home directory at `/opt/azurite`
+2. Adds the `azurite` user to the `docker` group
+3. Enables user lingering (`loginctl enable-linger azurite`)
+4. Copies `azurite.sh` to `/opt/azurite/` with execute permissions
+5. Copies `azurite.service` to `/etc/systemd/system/`
+6. Runs `systemctl daemon-reload` and enables the service to start on boot
 
-### Managing the Service
+After installation, start the service manually for the first time:
 
-**Start Azurite:**
 ```bash
 sudo systemctl start azurite.service
 ```
 
-**Stop Azurite:**
+---
+
+## Managing the Service
+
 ```bash
+# Start
+sudo systemctl start azurite.service
+
+# Stop
 sudo systemctl stop azurite.service
-```
 
-**Check status:**
-```bash
+# Check status
 sudo systemctl status azurite.service
-```
 
-**Enable auto-start on boot (already done by install script):**
-```bash
+# Enable auto-start on boot (done by install script)
 sudo systemctl enable azurite.service
-```
 
-**Disable auto-start:**
-```bash
+# Disable auto-start
 sudo systemctl disable azurite.service
-```
 
-**View logs:**
-```bash
+# View logs
 sudo journalctl -xeu azurite.service
-```
 
-**View real-time logs:**
-```bash
+# Follow real-time logs
 sudo journalctl -fu azurite.service
 ```
 
-### Management Script Commands
+---
 
-The `azurite.sh` script provides additional management capabilities:
+## Management Script Commands
 
-**Check container health:**
+The `azurite.sh` script can also be called directly as the `azurite` user:
+
 ```bash
+sudo -u azurite /opt/azurite/azurite.sh start
+sudo -u azurite /opt/azurite/azurite.sh stop
+sudo -u azurite /opt/azurite/azurite.sh status
 sudo -u azurite /opt/azurite/azurite.sh health
 ```
 
-This tests both Blob and Table Storage endpoints to ensure they're responding.
+The health check tests both Blob and Table Storage endpoints to confirm they are responding.
 
-**View container status:**
-```bash
-sudo -u azurite /opt/azurite/azurite.sh status
-```
+---
 
-**Manually start container:**
-```bash
-sudo -u azurite /opt/azurite/azurite.sh start
-```
+## Running Manually with Docker
 
-**Manually stop container:**
-```bash
-sudo -u azurite /opt/azurite/azurite.sh stop
-```
+Use these commands when running without systemd (e.g., on Windows 11 or for a quick test):
 
-### Data Persistence
+**Linux / macOS:**
 
-When running as a systemd service, data is stored in:
-```
-/home/azurite/.local/share/azurite-data
-```
-
-This directory is automatically created and persists across container restarts.
-
-### Service Configuration
-
-The service is configured to:
-- Start automatically after Docker is running
-- Use host networking (ports 10000, 10001, 10002)
-- Restart on failure
-- Run as the `azurite` user for security
-- Persist data in the azurite user's home directory
-
-## Running Azurite in Docker (Manual)
-
-For Windows 11 or manual Docker management on Linux, use these commands.
-
-### Start Azurite Container
-
-Run the following command to start Azurite with table storage support:
-
-```bash
-docker run -d \
-  --name azurite \
-  -p 10000:10000 \
-  -p 10001:10001 \
-  -p 10002:10002 \
-  mcr.microsoft.com/azure-storage/azurite
-```
-
-**Port Mappings:**
-- `10000`: Blob service
-- `10001`: Queue service  
-- `10002`: Table service (Azure Table Storage)
-
-**For Windows 11 (PowerShell):**
-```powershell
-docker run -d `
-  --name azurite `
-  -p 10000:10000 `
-  -p 10001:10001 `
-  -p 10002:10002 `
-  mcr.microsoft.com/azure-storage/azurite
-```
-
-### With Data Persistence
-
-To persist data between container restarts:
-
-**Linux:**
 ```bash
 docker run -d \
   --name azurite \
@@ -154,10 +132,11 @@ docker run -d \
   -p 10001:10001 \
   -p 10002:10002 \
   -v $HOME/azurite-data:/data \
-  mcr.microsoft.com/azure-storage/azurite
+  mcr.microsoft.com/azure-storage/azurite:latest
 ```
 
 **Windows 11 (PowerShell):**
+
 ```powershell
 docker run -d `
   --name azurite `
@@ -165,95 +144,31 @@ docker run -d `
   -p 10001:10001 `
   -p 10002:10002 `
   -v ${HOME}/azurite-data:/data `
-  mcr.microsoft.com/azure-storage/azurite
+  mcr.microsoft.com/azure-storage/azurite:latest
 ```
 
-## Testing the Connection
+| Port | Service |
+|------|---------|
+| 10000 | Blob storage |
+| 10001 | Queue storage |
+| 10002 | Table storage |
 
-### Verify Container is Running
-
-```bash
-docker ps | grep azurite
-```
-
-Expected output should show the container running with all three ports mapped.
-
-### Check Container Logs
-
-```bash
-docker logs azurite
-```
-
-You should see output indicating all services (Blob, Queue, and Table) have started successfully.
-
-### Test Table Storage Endpoint
-
-**Using curl:**
-
-```bash
-curl -I http://127.0.0.1:10002/devstoreaccount1?comp=properties
-```
-
-**Expected response:**
-- HTTP status `200 OK` or `400` (both indicate the service is responding)
-- Headers showing `Server: Azurite-Table/...`
-
-### Test with Azure Storage Explorer
-
-1. Download [Azure Storage Explorer](https://azure.microsoft.com/features/storage-explorer/)
-2. Connect using "Local storage emulator"
-3. Use the default connection string (or see below)
+---
 
 ## Connection Details
 
 ### Default Connection String
 
 ```
-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
 ```
 
-### Endpoint URLs
+| Field | Value |
+|-------|-------|
+| Account Name | `devstoreaccount1` |
+| Account Key | `Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==` |
 
-- **Blob Service**: `http://127.0.0.1:10000/devstoreaccount1`
-- **Queue Service**: `http://127.0.0.1:10001/devstoreaccount1`
-- **Table Service**: `http://127.0.0.1:10002/devstoreaccount1`
-
-### Account Credentials
-
-- **Account Name**: `devstoreaccount1`
-- **Account Key**: `Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==`
-
-## Container Management
-
-### Stop the Container
-
-```bash
-docker stop azurite
-```
-
-### Start the Container
-
-```bash
-docker start azurite
-```
-
-### Restart the Container
-
-```bash
-docker restart azurite
-```
-
-### Remove the Container
-
-```bash
-docker rm -f azurite
-```
-
-### View Real-time Logs
-
-```bash
-docker logs -f azurite
-```
+---
 
 ## Testing with Code
 
@@ -262,13 +177,15 @@ docker logs -f azurite
 ```python
 from azure.data.tables import TableServiceClient
 
-connection_string = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
+connection_string = (
+    "DefaultEndpointsProtocol=http;"
+    "AccountName=devstoreaccount1;"
+    "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;"
+    "TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
+)
 
-# Create the TableServiceClient
-table_service_client = TableServiceClient.from_connection_string(connection_string)
-
-# Create a table
-table_client = table_service_client.create_table("testtable")
+client = TableServiceClient.from_connection_string(connection_string)
+client.create_table("testtable")
 print("Table created successfully!")
 ```
 
@@ -277,20 +194,42 @@ print("Table created successfully!")
 ```csharp
 using Azure.Data.Tables;
 
-string connectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
+var connectionString =
+    "DefaultEndpointsProtocol=http;" +
+    "AccountName=devstoreaccount1;" +
+    "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+    "TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
 
 var tableServiceClient = new TableServiceClient(connectionString);
 await tableServiceClient.CreateTableIfNotExistsAsync("testtable");
 Console.WriteLine("Table created successfully!");
 ```
 
+---
+
+## Health Checks
+
+```bash
+# Check service status
+sudo systemctl status azurite.service
+
+# Run the built-in health check
+sudo -u azurite /opt/azurite/azurite.sh health
+
+# Test the Table Storage endpoint directly
+curl -I "http://127.0.0.1:10002/devstoreaccount1?comp=properties"
+
+# View container logs
+docker logs azurite
+```
+
+Expected: HTTP `200` or `400` from the Table Storage endpoint (both indicate the service is running).
+
+---
+
 ## Troubleshooting
 
-### Port Already in Use
-
-If you get a port conflict error, either:
-1. Stop the service using that port
-2. Use different ports:
+**Port already in use** — map to alternate host ports:
 
 ```bash
 docker run -d \
@@ -298,20 +237,25 @@ docker run -d \
   -p 10100:10000 \
   -p 10101:10001 \
   -p 10102:10002 \
-  mcr.microsoft.com/azure-storage/azurite
+  mcr.microsoft.com/azure-storage/azurite:latest
 ```
 
-Update your connection string to use `http://127.0.0.1:10102` for table storage.
+Update your connection string to use the new ports.
 
-### Connection Refused
-
+**Connection refused:**
 - Verify the container is running: `docker ps`
-- Check if ports are properly mapped: `docker port azurite`
-- Verify firewall settings allow local connections
+- Check port mappings: `docker port azurite`
+- Ensure Docker is running: `sudo systemctl status docker`
+
+**Connecting with Azure Storage Explorer:**
+1. Download [Azure Storage Explorer](https://azure.microsoft.com/features/storage-explorer/)
+2. Add a new connection → **Local storage emulator**
+3. Use the default connection string above
+
+---
 
 ## Additional Resources
 
 - [Azurite GitHub Repository](https://github.com/Azure/Azurite)
-- [Azure Table Storage Documentation](https://docs.microsoft.com/azure/storage/tables/)
+- [Azure Storage Documentation](https://docs.microsoft.com/azure/storage/)
 - [Azure Storage Explorer](https://azure.microsoft.com/features/storage-explorer/)
-_Azure t_

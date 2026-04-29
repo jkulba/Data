@@ -1,215 +1,205 @@
-# SQL Server Container Setup
+# SQL Server
 
-This directory contains scripts and configuration files to run Microsoft SQL Server 2022 in a Docker container with systemd service management.
+Microsoft SQL Server 2025 runs as a Docker container managed by a systemd service. Includes automated installation, persistent data storage, and sample database setup scripts.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Files](#files)
+4. [Installation](#installation)
+5. [Managing the Service](#managing-the-service)
+6. [Management Script Commands](#management-script-commands)
+7. [Connecting to SQL Server](#connecting-to-sql-server)
+8. [Sample Database Setup](#sample-database-setup)
+9. [Data Persistence](#data-persistence)
+10. [Health Checks](#health-checks)
+11. [Troubleshooting](#troubleshooting)
+12. [Security Notes](#security-notes)
+13. [Additional Resources](#additional-resources)
+
+---
+
+## Overview
+
+| Property | Value |
+|----------|-------|
+| Container image | `mcr.microsoft.com/mssql/server:2025-latest` |
+| Container name | `mssql-server` |
+| Service user | `mssql` |
+| Port | `1433` |
+| SA password | `P@ssword92` |
+| Data path | `/home/mssql/.local/share/mssql-data` |
+
+---
 
 ## Prerequisites
 
-**Required:**
-- **Docker** - Container runtime
-- **Root/sudo access** - Required for installation and systemd service setup
-
-**System Requirements:**
-- Linux system (tested on Debian)
-- Minimum 2GB RAM for SQL Server
-- systemd for service management
+| Requirement | Details |
+|-------------|---------|
+| Docker | Container runtime |
+| Root / sudo | Required for installation and systemd setup |
+| Linux system | Tested on Debian / Ubuntu |
+| RAM | Minimum 2 GB (SQL Server requirement) |
+| systemd | For service management |
 
 ---
 
-## Files Overview
+## Files
 
-### 1. install.sh
+| File | Description |
+|------|-------------|
+| `mssql.sh` | Container management script (start/stop/status/health) |
+| `mssql.service` | systemd service unit file |
+| `install.sh` | One-time installation script (requires root) |
+| `setup-acmedb.sh` | Creates the sample AcmeDB database |
+| `setup-acmedb.sql` | SQL script run by setup-acmedb.sh |
+| `README.md` | This file |
 
-**Purpose:** Automated installation script that sets up the SQL Server container as a systemd service.
+---
 
-**What it does:**
-- Verifies the script is run with root/sudo privileges
-- Creates the `mssql` user (if it doesn't exist) with home directory at `/opt/mssql`
-- Adds the `mssql` user to the `docker` group for container access
-- Enables user lingering for the `mssql` user (allows services to run when user is not logged in)
-- Copies `mssql.sh` script to `/opt/mssql/` and makes it executable
-- Copies `mssql.service` to `/etc/systemd/system/`
-- Reloads systemd and enables the service to start on boot
+## Installation
 
-**Usage:**
+Run the install script once to set up the service:
+
 ```bash
+cd /path/to/Data/sqlserver
 sudo ./install.sh
 ```
 
-**Notes:**
-- Must be run as root or with sudo
-- If the `mssql` user already exists, the script will display a message and continue
-- The service will automatically start on system boot after installation
+**What the install script does:**
 
----
+1. Creates an `mssql` system user with home directory at `/opt/mssql`
+2. Adds the `mssql` user to the `docker` group
+3. Enables user lingering (`loginctl enable-linger mssql`)
+4. Copies `mssql.sh` to `/opt/mssql/` with execute permissions
+5. Copies `mssql.service` to `/etc/systemd/system/`
+6. Runs `systemctl daemon-reload` and enables the service to start on boot
 
-### 2. mssql.sh
+After installation, start the service manually for the first time:
 
-**Purpose:** Container management script for starting, stopping, and monitoring the SQL Server container.
-
-**Configuration:**
-- **Container Name:** `mssql-server`
-- **Image:** `mcr.microsoft.com/mssql/server:2022-latest`
-- **SA Password:** `P@ssword92`
-- **Port:** `1433` (default SQL Server port)
-- **Data Path:** `$HOME/.local/share/mssql-data` (persistent storage for mssql user)
-
-**Commands:**
-- `start` - Creates and starts the SQL Server container
-- `stop` - Stops and removes the container
-- `status` - Shows container status
-- `health` - Checks if SQL Server is responding to queries
-
-**Usage:**
 ```bash
-# Start SQL Server
-./mssql.sh start
-
-# Stop SQL Server
-./mssql.sh stop
-
-# Check container status
-./mssql.sh status
-
-# Check SQL Server health
-./mssql.sh health
+sudo systemctl start mssql.service
 ```
 
-**Features:**
-- **Persistent Data:** Database files are stored in `$HOME/.local/share/mssql-data` and persist when the container is stopped or removed
-- **Auto-restart:** Container configured with `--restart=unless-stopped` policy
-- **Host Networking:** Uses `--network host` for direct port access
-- **Docker Integration:** Uses Docker CLI for container management
+> **Note:** SQL Server 2025 will run an in-place upgrade of any existing SQL Server 2022 data files on first start. Back up your data volume before upgrading.
 
 ---
 
-### 3. mssql.service
+## Managing the Service
 
-**Purpose:** systemd service unit file that manages the SQL Server container lifecycle.
-
-**Service Configuration:**
-- **Type:** `oneshot` (service starts and exits, container runs in background)
-- **User/Group:** Runs as `mssql` user (must be in docker group)
-- **Dependencies:** Requires Docker service and network to be available
-- **ExecStart:** Calls `mssql.sh start`
-- **ExecStop:** Calls `mssql.sh stop`
-- **ExecReload:** Calls `mssql.sh status`
-- **RemainAfterExit:** `true` (systemd considers service active after start script completes)
-- **Restart:** `on-failure` (automatically restarts if the script fails)
-- **Timeouts:** 60s for start, 30s for stop
-
-**systemd Commands:**
 ```bash
-# Start the service
+# Start
 sudo systemctl start mssql.service
 
-# Stop the service
+# Stop
 sudo systemctl stop mssql.service
 
-# Check service status
+# Check status
 sudo systemctl status mssql.service
+
+# Enable auto-start on boot (done by install script)
+sudo systemctl enable mssql.service
+
+# Disable auto-start
+sudo systemctl disable mssql.service
 
 # View logs
 sudo journalctl -xeu mssql.service
 
-# Enable on boot
-sudo systemctl enable mssql.service
-
-# Disable on boot
-sudo systemctl disable mssql.service
+# Follow real-time logs
+sudo journalctl -fu mssql.service
 ```
 
 ---
 
-### 4. setup-acmedb.sh & setup-acmedb.sql
+## Management Script Commands
 
-**Purpose:** Database initialization scripts for creating a sample database with test data.
+The `mssql.sh` script can also be called directly as the `mssql` user:
 
-#### setup-acmedb.sh (Bash Script)
-
-**What it does:**
-1. Copies `setup-acmedb.sql` into the running container at `/tmp/setup-acmedb-database.sql`
-2. Executes the SQL script using `sqlcmd` inside the container
-3. Reports success or failure
-
-**Usage:**
 ```bash
-# Ensure SQL Server container is running first
-./mssql.sh start
-
-# Run the database setup script
-./setup-acmedb.sh
+sudo -u mssql /opt/mssql/mssql.sh start
+sudo -u mssql /opt/mssql/mssql.sh stop
+sudo -u mssql /opt/mssql/mssql.sh status
+sudo -u mssql /opt/mssql/mssql.sh health
 ```
-
-**Connection Details:**
-- **Container:** `mssql-server`
-- **Username:** `sa`
-- **Password:** `P@ssword92`
-- **Tool:** `/opt/mssql-tools18/bin/sqlcmd` (inside container)
-
-#### setup-acmedb.sql (SQL Script)
-
-**What it creates:**
-- **Database:** `AcmeDB`
-- **Schema:** `Recruits`
-- **Table:** `Recruits.Users` with the following structure:
-  - `UserID` - UNIQUEIDENTIFIER (UUID) primary key
-  - `FirstName` - NVARCHAR(50)
-  - `LastName` - NVARCHAR(50)
-  - `Email` - NVARCHAR(100) (unique)
-  - `RegistrationDate` - DATETIME2 (defaults to current time)
-
-**Sample Data:**
-- Inserts 25 test records with Star Wars character names
-- Each record has a unique email address and auto-generated UUID
-
-**Why use these scripts:**
-- Quick database setup for development/testing
-- Demonstrates SQL Server features (schemas, UUIDs, constraints)
-- Provides realistic test data for application development
-- Can be customized for your own database initialization needs
 
 ---
 
-## Quick Start
+## Connecting to SQL Server
 
-### Full Installation (Recommended)
+### From Inside the Container
 
 ```bash
-# 1. Run the installation script
-sudo ./install.sh
+docker exec -it mssql-server \
+  /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
+```
 
-# 2. Verify the service is running
+### From the Host Machine
+
+```bash
+sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
+```
+
+### Connection Details
+
+| Field | Value |
+|-------|-------|
+| Server | `localhost` |
+| Port | `1433` |
+| Username | `sa` |
+| Password | `P@ssword92` |
+
+### .NET Connection String
+
+```
+Server=localhost,1433;Database=master;User Id=sa;Password=P@ssword92;TrustServerCertificate=True;
+```
+
+---
+
+## Sample Database Setup
+
+The `setup-acmedb.sh` script creates a sample `AcmeDB` database with test data.
+
+```bash
+# Ensure SQL Server is running first
 sudo systemctl status mssql.service
 
-# 3. (Optional) Create sample database
+# Run the setup script
+cd /path/to/Data/sqlserver
 ./setup-acmedb.sh
 ```
 
-### Manual Start (Without systemd)
+**What the script creates:**
 
-```bash
-# Start SQL Server
-./mssql.sh start
+| Object | Details |
+|--------|---------|
+| Database | `AcmeDB` |
+| Schema | `Recruits` |
+| Table | `Recruits.Users` |
+| Columns | `UserID` (UUID PK), `FirstName`, `LastName`, `Email` (unique), `RegistrationDate` |
+| Sample data | 25 rows with Star Wars character names |
 
-# Check if it's healthy
-./mssql.sh health
-
-# Connect to SQL Server (from host)
-sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
+```sql
+USE AcmeDB;
+SELECT * FROM Recruits.Users;
 ```
 
 ---
 
 ## Data Persistence
 
-Database files are stored in `~/.local/share/mssql-data` (for the mssql user: `/home/mssql/.local/share/mssql-data`) and are mounted into the container at `/var/opt/mssql`. This means:
+Database files are stored on the host at `/home/mssql/.local/share/mssql-data` and mounted into the container at `/var/opt/mssql`.
 
-- ✅ Data persists when the container is stopped
-- ✅ Data persists when the container is removed
-- ✅ Data persists across system reboots
-- ✅ You can backup the data directory for disaster recovery
+| Scenario | Data preserved? |
+|----------|----------------|
+| Container stopped | ✅ Yes |
+| Container removed | ✅ Yes |
+| System reboot | ✅ Yes |
 
-**Backup Example:**
+**Backup:**
+
 ```bash
 sudo systemctl stop mssql.service
 sudo tar -czf mssql-backup-$(date +%Y%m%d).tar.gz /home/mssql/.local/share/mssql-data
@@ -218,56 +208,75 @@ sudo systemctl start mssql.service
 
 ---
 
-## Troubleshooting
+## Health Checks
 
-### Check if Docker is installed
 ```bash
-docker --version
+# Check service status
+sudo systemctl status mssql.service
+
+# Run the built-in health check
+sudo -u mssql /opt/mssql/mssql.sh health
+
+# View container logs
+docker logs mssql-server
+
+# Verify connectivity manually
+docker exec -it mssql-server \
+  /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C \
+  -Q "SELECT @@VERSION"
 ```
 
-### Verify Docker service is running
+Expected: SQL Server version string in the output.
+
+---
+
+## Troubleshooting
+
+**Check Docker is installed and running:**
+
 ```bash
+docker --version
 sudo systemctl status docker
 ```
 
-### View container logs
-```bash
-docker logs mssql-server
-```
+**Verify the mssql user has Docker group access:**
 
-### View service logs
-```bash
-sudo journalctl -xeu mssql.service -f
-```
-
-### Manually connect to SQL Server
-```bash
-docker exec -it mssql-server /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssword92' -N -C
-```
-
-### Check if mssql user is in docker group
 ```bash
 groups mssql
 ```
 
-### Remove everything and start fresh
+**View container logs:**
+
+```bash
+docker logs mssql-server
+```
+
+**Reset everything and start fresh:**
+
 ```bash
 sudo systemctl stop mssql.service
 sudo systemctl disable mssql.service
 docker rm -f mssql-server
 sudo rm -rf /home/mssql/.local/share/mssql-data
 sudo ./install.sh
+sudo systemctl start mssql.service
 ```
 
 ---
 
 ## Security Notes
 
-⚠️ **WARNING:** The default SA password (`P@ssword92`) is hardcoded in the scripts. For production use:
+> ⚠️ **Warning:** The default SA password (`P@ssword92`) is hardcoded in the scripts. Before using in any shared or production-like environment:
 
-1. Change the password in `mssql.sh` before installation
-2. Use environment variables or secrets management
-3. Restrict network access to port 1433
-4. Consider using certificate-based authentication
+1. Change the password in `mssql.sh` before installation.
+2. Use environment variables or a secrets manager instead of hardcoded credentials.
+3. Restrict network access to port `1433`.
+4. Consider certificate-based authentication.
 
+---
 
+## Additional Resources
+
+- [SQL Server on Linux – Docker Quickstart](https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker)
+- [SQL Server Docker Hub](https://hub.docker.com/_/microsoft-mssql-server)
+- [sqlcmd Reference](https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility)
