@@ -57,11 +57,14 @@ See [json-server/README.md](json-server/README.md) for configuration details.
 Resource: https://github.com/typicode/json-server
 
 ### pgsql/
-Management scripts to run PostgreSQL database with pgAdmin in Docker containers.
+Management scripts to run PostgreSQL as a systemd-managed Docker container.
 
-- Docker Compose configuration for PostgreSQL and pgAdmin
-- Persistent volume setup
-- Web-based database management interface
+- Systemd service integration with auto-start on boot
+- Single instance configuration on port 5432
+- Persistent data storage
+- Health check monitoring
+- Installation and management scripts
+- Docker Compose alternative for non-systemd setups
 
 See [pgsql/README.md](pgsql/README.md) for setup instructions.
 
