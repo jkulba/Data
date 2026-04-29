@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONTAINER_NAME="azurite"
-IMAGE="mcr.microsoft.com/azure-storage/azurite"
+IMAGE="mcr.microsoft.com/azure-storage/azurite:latest"
 PORT_BLOB=10000
 PORT_QUEUE=10001
 PORT_TABLE=10002

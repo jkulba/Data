@@ -12,7 +12,6 @@ ExecReload=/opt/mssql/mssql.sh status
 RemainAfterExit=true
 User=mssql
 Group=mssql
-# Optional but recommended:
 TimeoutStartSec=60
 TimeoutStopSec=30
 Restart=on-failure

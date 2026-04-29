@@ -6,27 +6,30 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-if id "azurite" &>/dev/null; then
-    echo "User 'azurite' already exists, continuing..."
+SERVICE_USER="azurite"
+INSTALL_DIR="/opt/azurite"
+
+if id "$SERVICE_USER" &>/dev/null; then
+    echo "User '$SERVICE_USER' already exists, continuing..."
 else
-    sudo useradd -m -d /opt/azurite -s /bin/bash azurite
-    echo "User 'azurite' created"
+    useradd -m -d "$INSTALL_DIR" -s /bin/bash "$SERVICE_USER"
+    echo "User '$SERVICE_USER' created"
 fi
 
-# Add azurite user to docker group for container access
-sudo usermod -aG docker azurite
-echo "User 'azurite' added to docker group"
+# Add user to docker group for container access
+usermod -aG docker "$SERVICE_USER"
+echo "User '$SERVICE_USER' added to docker group"
 
-sudo loginctl enable-linger azurite
+loginctl enable-linger "$SERVICE_USER"
 
-sudo cp -v azurite.sh /opt/azurite/
-sudo chmod +x /opt/azurite/azurite.sh
+cp -v azurite.sh "$INSTALL_DIR/"
+chmod +x "$INSTALL_DIR/azurite.sh"
 
-sudo cp -v azurite.service /etc/systemd/system
+cp -v azurite.service /etc/systemd/system/
 
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable azurite.service
+systemctl daemon-reexec
+systemctl daemon-reload
+systemctl enable azurite.service
 
 echo ""
 echo "Installation complete!"

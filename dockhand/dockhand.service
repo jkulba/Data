@@ -1,17 +1,17 @@
 [Unit]
-Description=Seq Logging Server Container
+Description=Dockhand Modern Docker Management UI
 After=network-online.target docker.service
 Wants=network-online.target
 Requires=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/seq/seq.sh start
-ExecStop=/opt/seq/seq.sh stop
-ExecReload=/opt/seq/seq.sh status
+ExecStart=/opt/dockhand/dockhand.sh start
+ExecStop=/opt/dockhand/dockhand.sh stop
+ExecReload=/opt/dockhand/dockhand.sh status
 RemainAfterExit=true
-User=seq
-Group=seq
+User=dockhand
+Group=dockhand
 TimeoutStartSec=60
 TimeoutStopSec=30
 Restart=on-failure

@@ -1,6 +1,6 @@
 # SQL Server
 
-Microsoft SQL Server 2022 runs as a Docker container managed by a systemd service. Includes automated installation, persistent data storage, and sample database setup scripts.
+Microsoft SQL Server 2025 runs as a Docker container managed by a systemd service. Includes automated installation, persistent data storage, and sample database setup scripts.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ Microsoft SQL Server 2022 runs as a Docker container managed by a systemd servic
 
 | Property | Value |
 |----------|-------|
-| Container image | `mcr.microsoft.com/mssql/server:2022-latest` |
+| Container image | `mcr.microsoft.com/mssql/server:2025-latest` |
 | Container name | `mssql-server` |
 | Service user | `mssql` |
 | Port | `1433` |

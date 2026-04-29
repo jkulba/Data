@@ -1,18 +1,17 @@
 [Unit]
-Description=Dockhand Modern Docker Management UI
+Description=PostgreSQL Database Container
 After=network-online.target docker.service
 Wants=network-online.target
 Requires=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/dockhand/dockhand.sh start
-ExecStop=/opt/dockhand/dockhand.sh stop
-ExecReload=/opt/dockhand/dockhand.sh status
+ExecStart=/opt/pgsql/pgsql.sh start
+ExecStop=/opt/pgsql/pgsql.sh stop
+ExecReload=/opt/pgsql/pgsql.sh status
 RemainAfterExit=true
-User=dockhand
-Group=dockhand
-# Optional but recommended:
+User=pgsql
+Group=pgsql
 TimeoutStartSec=60
 TimeoutStopSec=30
 Restart=on-failure

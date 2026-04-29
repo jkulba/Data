@@ -6,8 +6,8 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-SERVICE_USER="mssql"
-INSTALL_DIR="/opt/mssql"
+SERVICE_USER="seq"
+INSTALL_DIR="/opt/seq"
 
 if id "$SERVICE_USER" &>/dev/null; then
     echo "User '$SERVICE_USER' already exists, continuing..."
@@ -22,24 +22,24 @@ echo "User '$SERVICE_USER' added to docker group"
 
 loginctl enable-linger "$SERVICE_USER"
 
-cp -v mssql.sh "$INSTALL_DIR/"
-chmod +x "$INSTALL_DIR/mssql.sh"
+cp -v seq.sh "$INSTALL_DIR/"
+chmod +x "$INSTALL_DIR/seq.sh"
 
-cp -v mssql.service /etc/systemd/system/
+cp -v seq.service /etc/systemd/system/
 
 systemctl daemon-reexec
 systemctl daemon-reload
-systemctl enable mssql.service
+systemctl enable seq.service
 
 echo ""
 echo "Installation complete!"
 echo ""
-echo "To start SQL Server:"
-echo "  sudo systemctl start mssql.service"
+echo "To start Seq:"
+echo "  sudo systemctl start seq.service"
 echo ""
 echo "To check status:"
-echo "  sudo systemctl status mssql.service"
+echo "  sudo systemctl status seq.service"
 echo ""
 echo "To view logs:"
-echo "  sudo journalctl -xeu mssql.service"
+echo "  sudo journalctl -xeu seq.service"
 echo ""

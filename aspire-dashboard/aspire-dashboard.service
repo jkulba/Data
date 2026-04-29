@@ -10,9 +10,8 @@ ExecStart=/opt/aspire-dashboard/aspire-dashboard.sh start
 ExecStop=/opt/aspire-dashboard/aspire-dashboard.sh stop
 ExecReload=/opt/aspire-dashboard/aspire-dashboard.sh status
 RemainAfterExit=true
-User=aspire
-Group=aspire
-# Optional but recommended:
+User=aspire-dashboard
+Group=aspire-dashboard
 TimeoutStartSec=60
 TimeoutStopSec=30
 Restart=on-failure

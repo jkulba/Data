@@ -9,10 +9,11 @@ Welcome to the **Data Tools** wiki. This project provides management scripts and
 | [Aspire Dashboard](Aspire-Dashboard) | .NET Aspire Dashboard for telemetry visualization | 18888, 18889, 18890 |
 | [Azurite](Azurite) | Azure Storage Emulator (Blob, Queue, Table) | 10000, 10001, 10002 |
 | [Docker / WSL2 Setup](Docker-WSL2-Setup) | Guide to installing Docker CLI in WSL2 on Windows 11 | — |
+| [Dockhand](Dockhand) | Modern Docker management UI with container and stack orchestration | 3000 |
 | [JSON Server](JSON-Server) | Fake REST API server for testing and prototyping | 3010, 3011, 3012 |
-| [PostgreSQL](PostgreSQL) | PostgreSQL database with pgAdmin via Docker Compose | 5432, 5050 |
+| [PostgreSQL](PostgreSQL) | PostgreSQL database as a systemd-managed Docker container | 5432 |
 | [SEQ](SEQ) | Datalust SEQ structured log server | 5341, 8081 |
-| [SQL Server](SQL-Server) | Microsoft SQL Server 2022 as a systemd service | 1433 |
+| [SQL Server](SQL-Server) | Microsoft SQL Server 2025 as a systemd service | 1433 |
 | [Valkey](Valkey) | Valkey open-source Redis-compatible cache | 6379 |
 
 ---

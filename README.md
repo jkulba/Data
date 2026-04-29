@@ -33,6 +33,18 @@ Runbook on how to install Docker CLI in WSL (Windows Subsystem for Linux).
 
 See [docker/WSL2-Docker-Setup-Guide.md](docker/WSL2-Docker-Setup-Guide.md) for installation instructions.
 
+### dockhand/
+Management scripts to run the Dockhand modern Docker management UI as a systemd service.
+
+- Systemd service integration with auto-start on boot
+- Real-time container management and Compose stack orchestration
+- Multi-environment Docker host support
+- Web UI on port 3000
+
+See [dockhand/README.md](dockhand/README.md) for detailed setup and usage instructions.
+
+Resource: https://dockhand.pro
+
 ### json-server/
 RESTful service for testing and prototyping. Provides a full fake REST API with zero coding.
 
@@ -45,11 +57,14 @@ See [json-server/README.md](json-server/README.md) for configuration details.
 Resource: https://github.com/typicode/json-server
 
 ### pgsql/
-Management scripts to run PostgreSQL database with pgAdmin in Docker containers.
+Management scripts to run PostgreSQL as a systemd-managed Docker container.
 
-- Docker Compose configuration for PostgreSQL and pgAdmin
-- Persistent volume setup
-- Web-based database management interface
+- Systemd service integration with auto-start on boot
+- Single instance configuration on port 5432
+- Persistent data storage
+- Health check monitoring
+- Installation and management scripts
+- Docker Compose alternative for non-systemd setups
 
 See [pgsql/README.md](pgsql/README.md) for setup instructions.
 
