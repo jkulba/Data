@@ -12,7 +12,6 @@ ExecReload=/opt/dockhand/dockhand.sh status
 RemainAfterExit=true
 User=dockhand
 Group=dockhand
-# Optional but recommended:
 TimeoutStartSec=60
 TimeoutStopSec=30
 Restart=on-failure

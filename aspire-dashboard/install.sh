@@ -6,37 +6,40 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-if id "aspire" &>/dev/null; then
-    echo "User 'aspire' already exists, continuing..."
+SERVICE_USER="aspire-dashboard"
+INSTALL_DIR="/opt/aspire-dashboard"
+
+if id "$SERVICE_USER" &>/dev/null; then
+    echo "User '$SERVICE_USER' already exists, continuing..."
 else
-    sudo useradd -m -d /opt/aspire -s /bin/bash aspire
-    echo "User 'aspire' created"
+    useradd -m -d "$INSTALL_DIR" -s /bin/bash "$SERVICE_USER"
+    echo "User '$SERVICE_USER' created"
 fi
 
-# Add aspire user to docker group for container access
-sudo usermod -aG docker aspire
-echo "User 'aspire' added to docker group"
+# Add user to docker group for container access
+usermod -aG docker "$SERVICE_USER"
+echo "User '$SERVICE_USER' added to docker group"
 
-sudo loginctl enable-linger aspire
+loginctl enable-linger "$SERVICE_USER"
 
-sudo cp -v azurite.sh /opt/aspire/
-sudo chmod +x /opt/aspire/azurite.sh
+cp -v aspire-dashboard.sh "$INSTALL_DIR/"
+chmod +x "$INSTALL_DIR/aspire-dashboard.sh"
 
-sudo cp -v azurite.service /etc/systemd/system
+cp -v aspire-dashboard.service /etc/systemd/system/
 
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable azurite.service
+systemctl daemon-reexec
+systemctl daemon-reload
+systemctl enable aspire-dashboard.service
 
 echo ""
 echo "Installation complete!"
 echo ""
-echo "To start Aspire:"
-echo "  sudo systemctl start aspire.service"
+echo "To start Aspire Dashboard:"
+echo "  sudo systemctl start aspire-dashboard.service"
 echo ""
 echo "To check status:"
-echo "  sudo systemctl status aspire.service"
+echo "  sudo systemctl status aspire-dashboard.service"
 echo ""
 echo "To view logs:"
-echo "  sudo journalctl -xeu aspire.service"
+echo "  sudo journalctl -xeu aspire-dashboard.service"
 echo ""

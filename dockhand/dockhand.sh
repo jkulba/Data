@@ -6,7 +6,7 @@ PORT=3000
 DATA_PATH="/opt/dockhand"
 
 start_container() {
-    echo "Starting dockhand container..."
+    echo "Starting Dockhand container..."
 
     # Remove existing container if present
     docker rm -f $CONTAINER_NAME 2>/dev/null || true
@@ -17,19 +17,18 @@ start_container() {
     # Start the container
     docker run -d \
         --name $CONTAINER_NAME \
-        -p 3000:3000 \
         --network host \
         --restart=unless-stopped \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v /opt/dockhand:/opt/dockhand \
-        -e DATA_DIR=/opt/dockhand \
+        -v "$DATA_PATH:$DATA_PATH" \
+        -e DATA_DIR="$DATA_PATH" \
         "$IMAGE"
 
-    echo "dockhand container started successfully."
+    echo "Dockhand container started successfully."
 }
 
 stop_container() {
-    echo "Stopping dockhand container..."
+    echo "Stopping Dockhand container..."
     docker stop "$CONTAINER_NAME" 2>/dev/null || echo "Container is not running."
     docker rm "$CONTAINER_NAME" 2>/dev/null || echo "Container already removed."
 }
@@ -39,14 +38,19 @@ status_container() {
 }
 
 check_health() {
-    echo "Checking dockhand container health..."
-    
+    echo "Checking Dockhand container health..."
+
     if ! docker ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
         echo "Container is not running"
         return 1
     fi
-    
-    echo "dockhand is healthy"
+
+    if ! curl -sf "http://127.0.0.1:${PORT}" >/dev/null 2>&1; then
+        echo "Dockhand is not responding"
+        return 1
+    fi
+
+    echo "Dockhand is healthy and accessible at http://localhost:${PORT}"
     return 0
 }
 

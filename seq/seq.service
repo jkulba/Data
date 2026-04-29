@@ -1,13 +1,19 @@
 [Unit]
-Description=SEQ Logging Server Pod
-After=network.target
+Description=Seq Logging Server Container
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
 
 [Service]
-Type=simple
-ExecStart=/usr/local/bin/seq.sh start
-ExecStop=/usr/local/bin/seq.sh stop
-RemainAfterExit=yes
-User=jim
+Type=oneshot
+ExecStart=/opt/seq/seq.sh start
+ExecStop=/opt/seq/seq.sh stop
+ExecReload=/opt/seq/seq.sh status
+RemainAfterExit=true
+User=seq
+Group=seq
+TimeoutStartSec=60
+TimeoutStopSec=30
 Restart=on-failure
 
 [Install]

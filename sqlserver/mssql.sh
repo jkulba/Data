@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONTAINER_NAME="mssql-server"
-IMAGE="mcr.microsoft.com/mssql/server:2022-latest"
+IMAGE="mcr.microsoft.com/mssql/server:2025-latest"
 SA_PASSWORD="P@ssword92"
 PORT=1433
 DATA_PATH="$HOME/.local/share/mssql-data"

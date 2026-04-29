@@ -11,13 +11,13 @@ SQL_SCRIPT="/tmp/setup-acmedb-database.sql" # Assuming you'll copy it into the c
 
 # Copy the SQL script into the container and then execute
 echo "Copying SQL script to the container..."
-podman cp setup-acmedb-database.sql "$CONTAINER_NAME:$SQL_SCRIPT"
+docker cp setup-acmedb-database.sql "$CONTAINER_NAME:$SQL_SCRIPT"
 
 # Construct the sqlcmd command to run inside the container
 SQLCMD_COMMAND="/opt/mssql-tools18/bin/sqlcmd -S localhost -U '$USERNAME' -P '$PASSWORD' -N -C -i '$SQL_SCRIPT'"
 
 echo "Executing SQL script inside the container..."
-podman exec -it "$CONTAINER_NAME" bash -c "$SQLCMD_COMMAND"
+docker exec -it "$CONTAINER_NAME" bash -c "$SQLCMD_COMMAND"
 
 # Get the exit code from the last executed command inside the container
 EXIT_CODE=$?

@@ -33,6 +33,18 @@ Runbook on how to install Docker CLI in WSL (Windows Subsystem for Linux).
 
 See [docker/WSL2-Docker-Setup-Guide.md](docker/WSL2-Docker-Setup-Guide.md) for installation instructions.
 
+### dockhand/
+Management scripts to run the Dockhand modern Docker management UI as a systemd service.
+
+- Systemd service integration with auto-start on boot
+- Real-time container management and Compose stack orchestration
+- Multi-environment Docker host support
+- Web UI on port 3000
+
+See [dockhand/README.md](dockhand/README.md) for detailed setup and usage instructions.
+
+Resource: https://dockhand.pro
+
 ### json-server/
 RESTful service for testing and prototyping. Provides a full fake REST API with zero coding.
 

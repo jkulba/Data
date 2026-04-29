@@ -20,6 +20,11 @@ start_container() {
         -p $PORT_2:18889 \
         -p $PORT_3:18890 \
         -e DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=$DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS \
+        --health-cmd "curl -sf http://localhost:18888 || exit 1" \
+        --health-interval 30s \
+        --health-timeout 5s \
+        --health-retries 3 \
+        --health-start-period 15s \
         "$IMAGE"
 
     echo "Aspire Dashboard container started successfully."
