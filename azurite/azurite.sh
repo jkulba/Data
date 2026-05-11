@@ -22,7 +22,7 @@ start_container() {
         --network host \
         --restart=unless-stopped \
         -v "$DATA_PATH:/data" \
-        --health-cmd "nc -z 127.0.0.1 ${PORT_BLOB} && nc -z 127.0.0.1 ${PORT_QUEUE} && nc -z 127.0.0.1 ${PORT_TABLE} || exit 1" \
+        --health-cmd "node -e \"const n=require('net'),p=[${PORT_BLOB},${PORT_QUEUE},${PORT_TABLE}];let i=0;(function c(){if(i>=p.length)process.exit(0);const s=n.createConnection(p[i],'127.0.0.1',()=>{s.destroy();i++;c()});s.on('error',()=>process.exit(1))})()\"" \
         --health-interval 30s \
         --health-timeout 5s \
         --health-retries 3 \
