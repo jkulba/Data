@@ -224,9 +224,38 @@ Console.WriteLine("Table created successfully!");
 
 ## Health Checks
 
+### Management script health check
+
 ```bash
-# Verify the container is running
-docker ps | grep azurite
+sudo -u azurite /opt/azurite/azurite.sh health
+```
+
+Tests that the container is running and that both the Blob (`10000`) and Table (`10002`) HTTP endpoints are responding. Returns `0` on success, `1` on failure.
+
+### Docker HEALTHCHECK (used by Dockhand)
+
+The container is started with a built-in Docker health check that uses Node.js to verify TCP connectivity on all three ports:
+
+| Parameter | Value |
+|-----------|-------|
+| Interval | 30s |
+| Timeout | 5s |
+| Retries | 3 |
+| Start period | 10s |
+
+Dockhand reads this status and displays it as **healthy**, **unhealthy**, or **starting** in the container list. The health badge becomes active after the start period elapses.
+
+To inspect the raw Docker health state directly:
+
+```bash
+docker inspect --format "{{.State.Health.Status}}" azurite
+```
+
+### Manual endpoint test
+
+```bash
+# Test the Blob Storage endpoint
+curl -I "http://127.0.0.1:10000/devstoreaccount1?comp=properties"
 
 # Test the Table Storage endpoint
 curl -I "http://127.0.0.1:10002/devstoreaccount1?comp=properties"
@@ -235,7 +264,7 @@ curl -I "http://127.0.0.1:10002/devstoreaccount1?comp=properties"
 docker logs azurite
 ```
 
-Expected: HTTP `200` or `400` response from the Table Storage endpoint (both indicate the service is running).
+Expected: HTTP `200` or `400` response (both indicate the service is running).
 
 ---
 
