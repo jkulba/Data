@@ -1,0 +1,20 @@
+[Unit]
+Description=Qdrant Vector Database Container
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/qdrant/qdrant.sh start
+ExecStop=/opt/qdrant/qdrant.sh stop
+ExecReload=/opt/qdrant/qdrant.sh status
+RemainAfterExit=true
+User=qdrant
+Group=qdrant
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
